@@ -1,6 +1,6 @@
 <script lang="ts">
 import { ref } from 'vue';
-import { bootcamp_chat_backend, canisterId, createActor , } from '../../declarations/bootcamp_chat_backend';
+import { bootcamp_chat_backend, canisterId, createActor } from '../../declarations/bootcamp_chat_backend';
 import { AuthClient } from '@dfinity/auth-client';
 import { HttpAgent } from '@dfinity/agent';
 import type { Identity } from '@dfinity/agent';
@@ -10,14 +10,14 @@ export default {
   data() {
     return {
       newNote: "",
-      notes: [] as string[],
+      notes: [] as string[][],
       identity: undefined as undefined | Identity,
-      principalText: ""
+      principalText: "",
     }
   },
   methods: {
     async dodajNotatke() {
-      if(!this.identity || this.identity.getPrincipal() === Principal.anonymous()){
+      if (!this.identity || this.identity.getPrincipal() === Principal.anonymous()) {
         throw new Error("PLZ log in")
       }
       const backend = createActor(canisterId, {
@@ -29,7 +29,7 @@ export default {
       await this.pobierzNotatki()
     },
     async pobierzNotatki() {
-      if(!this.identity || this.identity.getPrincipal() === Principal.anonymous()){
+      if (!this.identity || this.identity.getPrincipal() === Principal.anonymous()) {
         throw new Error("PLZ log in")
       }
       this.notes = await bootcamp_chat_backend.get_notes(this.identity.getPrincipal())
@@ -37,14 +37,14 @@ export default {
     async login() {
       const authClient = await AuthClient.create();
       await authClient.login({
-        identityProvider: "http://a4tbr-q4aaa-aaaaa-qaafq-cai.localhost:4943/"
+        identityProvider: "http://avqkn-guaaa-aaaaa-qaaea-cai.localhost:4943/"
       })
 
       const identity = authClient.getIdentity();
       this.principalText = identity.getPrincipal().toText()
       console.log("Zalogowano", this.principalText)
       this.identity = identity;
-      this.pobierzNotatki()
+      await this.pobierzNotatki()
     }
   },
 }
@@ -56,8 +56,10 @@ export default {
     <br />
     <br />
     {{ principalText }} <button @click="login">login</button>
-    <div v-for="note in notes[0]">
-      {{ note }}
+    <div>
+      <div v-for="note in notes[0]">
+        {{ note }}
+      </div>
     </div>
     <div>
       <textarea v-model="newNote"></textarea><button @click="dodajNotatke">Dodaj notatke</button>
